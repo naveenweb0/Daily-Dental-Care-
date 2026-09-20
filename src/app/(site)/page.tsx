@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { asc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { services, doctors } from "@/db/schema";
+import { getActiveServices, getActiveDoctors } from "@/lib/dataProvider";
 import { CLINIC, waLink } from "@/lib/clinic";
 import BeforeAfterSlider from "@/components/site/BeforeAfterSlider";
 import SmileQuiz from "@/components/site/SmileQuiz";
@@ -43,10 +41,11 @@ const CLINIC_FEATURES = [
 ];
 
 export default async function HomePage() {
-  const [svc, docs] = await Promise.all([
-    db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder)).limit(6),
-    db.select().from(doctors).where(eq(doctors.active, true)).limit(3),
+  const [allSvc, docs] = await Promise.all([
+    getActiveServices(),
+    getActiveDoctors(),
   ]);
+  const svc = allSvc.slice(0, 6);
 
   return (
     <>

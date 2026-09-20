@@ -8,12 +8,18 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const all = req.nextUrl.searchParams.get("all") === "1";
-  const rows = await db
-    .select()
-    .from(doctors)
-    .where(all ? undefined : eq(doctors.active, true))
-    .orderBy(asc(doctors.id));
-  return NextResponse.json({ doctors: rows });
+  try {
+    const rows = await db
+      .select()
+      .from(doctors)
+      .where(all ? undefined : eq(doctors.active, true))
+      .orderBy(asc(doctors.id));
+    return NextResponse.json({ doctors: rows });
+  } catch {
+    const { getActiveDoctors } = await import("@/lib/dataProvider");
+    const demo = await getActiveDoctors();
+    return NextResponse.json({ doctors: demo });
+  }
 }
 
 export async function POST(req: NextRequest) {

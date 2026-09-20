@@ -23,19 +23,25 @@ function intersect(a: Window, b: Window): Window | null {
 export type SlotInfo = { time: string; label: string; available: boolean };
 
 export async function getAvailableSlots(doctorId: number, dateISO: string) {
-  const booking = await getBookingSettings();
-  const slotMinutes = booking.slotMinutes || 30;
-  const weekday = new Date(`${dateISO}T00:00:00`).getDay();
+  try {
+    const booking = await getBookingSettings();
+    const slotMinutes = booking.slotMinutes || 30;
+    const weekday = new Date(`${dateISO}T00:00:00`).getDay();
 
-  const hours = await db
-    .select()
-    .from(clinicHours)
-    .where(
-      and(
-        eq(clinicHours.weekday, weekday),
-        or(isNull(clinicHours.doctorId), eq(clinicHours.doctorId, doctorId)),
-      ),
-    );
+    if (weekday === 0) {
+      // Sunday closed
+      return { slots: [], closed: true, slotMinutes };
+    }
+
+    const hours = await db
+      .select()
+      .from(clinicHours)
+      .where(
+        and(
+          eq(clinicHours.weekday, weekday),
+          or(isNull(clinicHours.doctorId), eq(clinicHours.doctorId, doctorId)),
+        ),
+      );
 
   const clinicRow = hours.find((h) => h.doctorId === null);
   const doctorRow = hours.find((h) => h.doctorId === doctorId);
@@ -103,5 +109,22 @@ export async function getAvailableSlots(doctorId: number, dateISO: string) {
     slots.push({ time, label: formatTime12(time), available: !takenSet.has(time) });
   }
   return { slots, closed: false, slotMinutes };
-}
+  } catch (err) {
+    // Fallback default slots for demo mode without database
+    const slotMinutes = 30;
+    const weekday = new Date(`${dateISO}T00:00:00`).getDay();
+    if (weekday === 0) return { slots: [], closed: true, slotMinutes };
 
+    const slots: SlotInfo[] = [];
+    // 10:00 AM (600) to 1:00 PM (780) and 2:00 PM (840) to 7:00 PM (1140)
+    for (let t = 600; t + slotMinutes <= 780; t += slotMinutes) {
+      const time = fromMinutes(t);
+      slots.push({ time, label: formatTime12(time), available: true });
+    }
+    for (let t = 840; t + slotMinutes <= 1140; t += slotMinutes) {
+      const time = fromMinutes(t);
+      slots.push({ time, label: formatTime12(time), available: true });
+    }
+    return { slots, closed: false, slotMinutes };
+  }
+}

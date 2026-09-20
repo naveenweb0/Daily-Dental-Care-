@@ -1,21 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, eq, ne, asc } from "drizzle-orm";
-import { db } from "@/db";
-import { services } from "@/db/schema";
+import { getServiceBySlug, getOtherServices } from "@/lib/dataProvider";
 import { CLINIC, waLink } from "@/lib/clinic";
 
 export const dynamic = "force-dynamic";
 
-async function getService(slug: string) {
-  const rows = await db.select().from(services).where(and(eq(services.slug, slug), eq(services.active, true))).limit(1);
-  return rows[0] ?? null;
-}
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const s = await getService(slug);
+  const s = await getServiceBySlug(slug);
   if (!s) return { title: "Treatment not found" };
   return {
     title: s.seoTitle || `${s.name} in Mohali | Daily Dental Care`,
@@ -27,14 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function TreatmentPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const s = await getService(slug);
+  const s = await getServiceBySlug(slug);
   if (!s) notFound();
-  const others = await db
-    .select()
-    .from(services)
-    .where(and(eq(services.active, true), ne(services.id, s.id)))
-    .orderBy(asc(services.sortOrder))
-    .limit(4);
+  const others = await getOtherServices(s.slug, 4);
 
   return (
     <div>

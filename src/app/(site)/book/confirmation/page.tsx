@@ -15,15 +15,20 @@ export default async function ConfirmationPage({
   searchParams: Promise<{ id?: string }>;
 }) {
   const { id } = await searchParams;
-  const rows = id
-    ? await db
+  let rows: any[] = [];
+  if (id) {
+    try {
+      rows = await db
         .select({ a: appointments, doctorName: doctors.name, serviceName: services.name })
         .from(appointments)
         .leftJoin(doctors, eq(doctors.id, appointments.doctorId))
         .leftJoin(services, eq(services.id, appointments.serviceId))
         .where(eq(appointments.appointmentNumber, id))
-        .limit(1)
-    : [];
+        .limit(1);
+    } catch {
+      rows = [];
+    }
+  }
   const row = rows[0];
 
   if (!row) {

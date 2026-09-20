@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { asc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { doctors, services } from "@/db/schema";
+import { getActiveServices, getActiveDoctors } from "@/lib/dataProvider";
 import BookingForm from "@/components/site/BookingForm";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +13,8 @@ export const metadata: Metadata = {
 
 export default async function BookPage() {
   const [svc, docs] = await Promise.all([
-    db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder)),
-    db.select().from(doctors).where(eq(doctors.active, true)).orderBy(asc(doctors.id)),
+    getActiveServices(),
+    getActiveDoctors(),
   ]);
 
   return (

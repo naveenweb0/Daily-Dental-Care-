@@ -8,12 +8,18 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const all = req.nextUrl.searchParams.get("all") === "1";
-  const rows = await db
-    .select()
-    .from(services)
-    .where(all ? undefined : eq(services.active, true))
-    .orderBy(asc(services.sortOrder), asc(services.name));
-  return NextResponse.json({ services: rows });
+  try {
+    const rows = await db
+      .select()
+      .from(services)
+      .where(all ? undefined : eq(services.active, true))
+      .orderBy(asc(services.sortOrder), asc(services.name));
+    return NextResponse.json({ services: rows });
+  } catch {
+    const { getActiveServices } = await import("@/lib/dataProvider");
+    const demo = await getActiveServices();
+    return NextResponse.json({ services: demo });
+  }
 }
 
 export async function POST(req: NextRequest) {

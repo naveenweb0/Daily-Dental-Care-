@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { asc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { services } from "@/db/schema";
+import { getActiveServices } from "@/lib/dataProvider";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TreatmentsPage() {
-  const rows = await db.select().from(services).where(eq(services.active, true)).orderBy(asc(services.sortOrder));
+  const rows = await getActiveServices();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">

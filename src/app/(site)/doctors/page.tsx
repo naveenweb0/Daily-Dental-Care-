@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { doctors } from "@/db/schema";
+import { getActiveDoctors } from "@/lib/dataProvider";
 import { CLINIC, waLink } from "@/lib/clinic";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DoctorsPage() {
-  const rows = await db.select().from(doctors).where(eq(doctors.active, true));
+  const rows = await getActiveDoctors();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">

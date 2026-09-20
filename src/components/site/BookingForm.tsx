@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Service = { id: number; name: string; slug: string; durationMinutes: number };
-type Doctor = { id: number; name: string; qualification: string; specialization: string; photo: string };
+type Doctor = { id: number; name: string; qualification: string; specialization: string; photo?: string | null };
 type Slot = { time: string; label: string; available: boolean };
 
 const field =

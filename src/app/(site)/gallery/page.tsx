@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { services } from "@/db/schema";
 import BeforeAfterSlider from "@/components/site/BeforeAfterSlider";
 
 export const dynamic = "force-dynamic";
@@ -47,8 +44,6 @@ const CLINIC_PHOTOS = [
 ];
 
 export default async function GalleryPage() {
-  const rows = await db.select().from(services).where(eq(services.active, true));
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 space-y-16">
       {/* Header */}

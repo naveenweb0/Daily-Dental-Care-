@@ -1,10 +1,10 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/dental_clinic";
 
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL environment variable is required");
+if (!process.env.DATABASE_URL) {
+  console.warn("⚠️ DATABASE_URL not set. Running in demo mode with fallback connection.");
 }
 
 const isLocalhost =
